@@ -1,0 +1,49 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+TEST_CENTOS = true
+TEST_UBUNTU = true
+
+TEST_MODULE = File.basename( File.absolute_path('..') )
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+    if TEST_CENTOS
+        config.vm.define "centos" do |centos|
+            centos.vm.hostname = "#{TEST_MODULE}-centos"
+            centos.vm.box = "centos/7"
+            centos.vm.provider "virtualbox" do |vb|
+                vb.name = "ansibe-role_#{TEST_MODULE}_centos"
+            end
+        end
+    end
+
+    if TEST_UBUNTU
+        config.vm.define "ubuntu" do |ubuntu|
+            ubuntu.vm.hostname = "#{TEST_MODULE}-ubuntu"
+            ubuntu.vm.box = "bento/ubuntu-17.04"
+            ubuntu.vm.provider "virtualbox" do |vb|
+                vb.name = "ansible-role_#{TEST_MODULE}_ubuntu"
+            end
+        end
+    end
+
+    config.vm.provision "ansible" do |ansible|
+        ansible.playbook = "test.yml"
+        #ansible.verbose = "vvvv"
+        #ansible.host_key_checking = false
+        #ansible.limit = 'all'
+        ansible.sudo = false
+        ansible.extra_vars = {
+            test_module: TEST_MODULE,
+        }
+    end
+
+
+    config.vm.provider "virtualbox" do |vb|
+        vb.cpus = 1
+        vb.memory = 1024
+    end
+end
+
