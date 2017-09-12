@@ -10,7 +10,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     if TEST_CENTOS
-        config.vm.define "centos" do |centos|
+        config.vm.define "#{TEST_MODULE}-centos" do |centos|
             centos.vm.hostname = "#{TEST_MODULE}-centos"
             centos.vm.box = "centos/7"
             centos.vm.provider "virtualbox" do |vb|
@@ -20,7 +20,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
 
     if TEST_UBUNTU
-        config.vm.define "ubuntu" do |ubuntu|
+        config.vm.define "#{TEST_MODULE}-ubuntu" do |ubuntu|
             ubuntu.vm.hostname = "#{TEST_MODULE}-ubuntu"
             ubuntu.vm.box = "bento/ubuntu-17.04"
             ubuntu.vm.provider "virtualbox" do |vb|
