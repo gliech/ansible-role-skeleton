@@ -1,63 +1,62 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Diese Variablen bestimmen ob eine Maschine des entsprechenden Typs gestartet
-# wird. Das geht schneller als den entsprechenden Codeblock jedes mal auszukomm-
-# mentieren. Der Rest des Vagrantfiles sollte nur angepasst werden müssen wenn
-# man ein komplizierteres Testszenario braucht.
-TEST_CENTOS = true
-TEST_UBUNTU = true
+# Jedes Key-Value-Pair dieses Hashes definiert den Namen und das Box Image einer
+# Virtuellen Machine die zum testen der Rolle gestartet werden soll. In dieser
+# Liste können je nach Bedarf Zeilen hinzugefügt oder entfernt werden. Der Rest
+# des Vagrantfiles sollte nur angepasst werden müssen wenn man ein komplexeres
+# Testszenario braucht.
+machines = {
+    ubuntu: 'bento/ubuntu-17.04',
+    centos: 'centos/7',
+#   debian: 'debian/testing64',
+}
 
 # Bestimme den Namen des Moduls das zu testen ist aus dem Basename des Parent
 # Directories des Directories in dem sich der Vagrantfile befindet
-TEST_MODULE = File.basename( File.absolute_path('..') )
+test_role = File.basename( File.absolute_path('..') )
 
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-    # Konfiguration der Centos Testmaschine
-    if TEST_CENTOS
-        config.vm.define "#{TEST_MODULE}-centos" do |centos|
-            centos.vm.hostname = "#{TEST_MODULE}-centos"
-            centos.vm.box = "centos/7"
-            centos.vm.provider "virtualbox" do |vb|
-                vb.name = "ansibe-role_#{TEST_MODULE}_centos"
+    # Konfiguration aller Maschinen die in machines definiert sind
+    machines.each_with_index do |(machine_name, box_image), index|
+
+        config.vm.define "#{test_role}-#{machine_name}" do |machine|
+            machine.vm.hostname = "#{test_role}-#{machine_name}"
+            machine.vm.box = "#{box_image}"
+            # Jede Maschine bekommt eine IP im privaten Default Netzwerk von
+            # Virtualbox, die sowohl von anderen VMs als auch vom Host aus
+            # erreichbar ist. Für komplexere Tests sollte hier wahrscheinlich
+            # trotzdem ein anderer Weg gewählt werden
+            machine.vm.network 'private_network', type: 'dhcp'
+
+            # Allgemeine Einstellungen die jede Maschine in Virtualbox bekommt.
+            # Dieser Bereich kann an die Fähigkeiten des Hosts angepasst werden.
+            machine.vm.provider 'virtualbox' do |vbox|
+                vbox.name = "ansibe_#{test_role}_#{machine_name}"
+                vbox.cpus = 1
+                vbox.memory = 1024
+            end
+
+            # Provisioniere, wenn die letzte Maschine hochgefahren wurde, alle 
+            # Maschinen mit Ansible. Würde dieser Block außerhalb einer einzigen
+            # Maschinendefinition stehen, würde Ansible beim Hochfahren jeder
+            # Maschine versuchen alle Maschinen zu konfigurieren
+            if index == machines.size - 1
+                machine.vm.provision 'ansible', run: 'always' do |ansible|
+                    ansible.playbook = 'test.yml'
+                    #ansible.verbose = 'vvvv'
+                    #ansible.host_key_checking = false
+                    ansible.limit = 'all'
+                    ansible.sudo = false
+                    ansible.extra_vars = {
+                        test_role: test_role,
+                    }
+                end
             end
         end
-    end
-
-    # Konfiguration der Ubuntu Testmaschine
-    if TEST_UBUNTU
-        config.vm.define "#{TEST_MODULE}-ubuntu" do |ubuntu|
-            ubuntu.vm.hostname = "#{TEST_MODULE}-ubuntu"
-            ubuntu.vm.box = "bento/ubuntu-17.04"
-            ubuntu.vm.provider "virtualbox" do |vb|
-                vb.name = "ansible-role_#{TEST_MODULE}_ubuntu"
-            end
-        end
-    end
-
-    # Ausführen der Rolle die getestet werden soll durch Ansible. Wenn mehrere
-    # Maschienen miteinander interagieren sollen muss diese Sektion ggf. in die
-    # Konfiguration der letzten Maschine die hoch gefahren wird verschoben
-    # werden.
-    config.vm.provision "ansible" do |ansible|
-        ansible.playbook = "test.yml"
-        #ansible.verbose = "vvvv"
-        #ansible.host_key_checking = false
-        #ansible.limit = 'all'
-        ansible.sudo = false
-        ansible.extra_vars = {
-            test_module: TEST_MODULE,
-        }
-    end
-
-    # Allgemeine Einstellungen die jede Maschine in Virtualbox bekommt. Dieser
-    # Bereich kann an die Fähigkeiten des Hosts angepasst werden
-    config.vm.provider "virtualbox" do |vb|
-        vb.cpus = 1
-        vb.memory = 1024
     end
 end
 
