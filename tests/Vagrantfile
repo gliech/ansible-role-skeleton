@@ -40,7 +40,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                 vbox.memory = 1024
             end
 
-            # Provisioniere, wenn die letzte Maschine hochgefahren wurde, alle 
+            # Provisioniere, wenn die letzte Maschine hochgefahren wurde, alle
             # Maschinen mit Ansible. Würde dieser Block außerhalb einer einzigen
             # Maschinendefinition stehen, würde Ansible beim Hochfahren jeder
             # Maschine versuchen alle Maschinen zu konfigurieren
