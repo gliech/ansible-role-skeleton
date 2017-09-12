@@ -1,14 +1,22 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# Diese Variablen bestimmen ob eine Maschine des entsprechenden Typs gestartet
+# wird. Das geht schneller als den entsprechenden Codeblock jedes mal auszukomm-
+# mentieren. Der Rest des Vagrantfiles sollte nur angepasst werden müssen wenn
+# man ein komplizierteres Testszenario braucht.
 TEST_CENTOS = true
 TEST_UBUNTU = true
 
+# Bestimme den Namen des Moduls das zu testen ist aus dem Basename des Parent
+# Directories des Directories in dem sich der Vagrantfile befindet
 TEST_MODULE = File.basename( File.absolute_path('..') )
+
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
+    # Konfiguration der Centos Testmaschine
     if TEST_CENTOS
         config.vm.define "#{TEST_MODULE}-centos" do |centos|
             centos.vm.hostname = "#{TEST_MODULE}-centos"
@@ -19,6 +27,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         end
     end
 
+    # Konfiguration der Ubuntu Testmaschine
     if TEST_UBUNTU
         config.vm.define "#{TEST_MODULE}-ubuntu" do |ubuntu|
             ubuntu.vm.hostname = "#{TEST_MODULE}-ubuntu"
@@ -29,6 +38,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         end
     end
 
+    # Ausführen der Rolle die getestet werden soll durch Ansible. Wenn mehrere
+    # Maschienen miteinander interagieren sollen muss diese Sektion ggf. in die
+    # Konfiguration der letzten Maschine die hoch gefahren wird verschoben
+    # werden.
     config.vm.provision "ansible" do |ansible|
         ansible.playbook = "test.yml"
         #ansible.verbose = "vvvv"
@@ -40,7 +53,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         }
     end
 
-
+    # Allgemeine Einstellungen die jede Maschine in Virtualbox bekommt. Dieser
+    # Bereich kann an die Fähigkeiten des Hosts angepasst werden
     config.vm.provider "virtualbox" do |vb|
         vb.cpus = 1
         vb.memory = 1024
