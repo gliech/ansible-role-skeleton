@@ -1,20 +1,21 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Jedes Key-Value-Pair dieses Hashes definiert den Namen und das Box Image einer
-# Virtuellen Machine die zum testen der Rolle gestartet werden soll. In dieser
-# Liste können je nach Bedarf Zeilen hinzugefügt oder entfernt werden. Der Rest
-# des Vagrantfiles sollte nur angepasst werden müssen wenn man ein komplexeres
-# Testszenario braucht.
+# Jedes Item dieses Arrays definiert den Namen, das Box Image und die Ansible 
+# Gruppen einer Virtuellen Machine die zum testen der Rolle gestartet werden
+# soll. In dieser Liste können je nach Bedarf Zeilen hinzugefügt oder entfernt
+# werden. Der Rest des Vagrantfiles sollte nur angepasst werden müssen wenn man
+# ein komplexeres Testszenario braucht.
 guests = [
-    { name: 'ubuntu', box: 'bento/ubuntu-17.04' },
-    { name: 'centos', box: 'centos/7' },
-#   { name: 'debian', box: 'debian/testing64' },
+    { name: 'ubuntu', box: 'bento/ubuntu-17.04', groups: [] },
+    { name: 'centos', box: 'centos/7',           groups: [] },
+#   { name: 'debian', box: 'debian/testing64',   groups: ['web', 'db'] },
 ]
 
 # Bestimme den Namen des Moduls das zu testen ist aus dem Basename des Parent
 # Directories des Directories in dem sich der Vagrantfile befindet
 test_role = File.basename( File.absolute_path('..') )
+ansible_groups = Hash.new([])
 
 VAGRANTFILE_API_VERSION = "2"
 
@@ -40,6 +41,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                 vbox.memory = 2048
             end
 
+            guest[:groups].each do |group|
+                ansible_groups[group] += ["#{test_role}-#{guest[:name]}"]
+            end
+
             # Provisioniere, wenn die letzte Maschine hochgefahren wurde, alle
             # Maschinen mit Ansible. Würde dieser Block außerhalb einer einzigen
             # Maschinendefinition stehen, würde Ansible beim Hochfahren jeder
@@ -51,6 +56,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                     #ansible.host_key_checking = false
                     ansible.limit = 'all'
                     ansible.sudo = false
+                    ansible.groups = ansible_groups
                     ansible.extra_vars = {
                         test_role: test_role,
                     }
