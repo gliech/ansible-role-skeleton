@@ -6,11 +6,11 @@
 # Liste können je nach Bedarf Zeilen hinzugefügt oder entfernt werden. Der Rest
 # des Vagrantfiles sollte nur angepasst werden müssen wenn man ein komplexeres
 # Testszenario braucht.
-machines = {
-    ubuntu: 'bento/ubuntu-17.04',
-    centos: 'centos/7',
-#   debian: 'debian/testing64',
-}
+guests = [
+    { name: 'ubuntu', box: 'bento/ubuntu-17.04' },
+    { name: 'centos', box: 'centos/7' },
+#   { name: 'debian', box: 'debian/testing64' },
+]
 
 # Bestimme den Namen des Moduls das zu testen ist aus dem Basename des Parent
 # Directories des Directories in dem sich der Vagrantfile befindet
@@ -20,12 +20,12 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-    # Konfiguration aller Maschinen die in machines definiert sind
-    machines.each_with_index do |(machine_name, box_image), index|
+    # Konfiguration aller Maschinen die in guests definiert sind
+    guests.each_with_index do |guest, index|
 
-        config.vm.define "#{test_role}-#{machine_name}" do |machine|
-            machine.vm.hostname = "#{test_role}-#{machine_name}"
-            machine.vm.box = "#{box_image}"
+        config.vm.define "#{test_role}-#{guest[:name]}" do |machine|
+            machine.vm.hostname = "#{test_role}-#{guest[:name]}"
+            machine.vm.box = guest[:box]
             # Jede Maschine bekommt eine IP im privaten Default Netzwerk von
             # Virtualbox, die sowohl von anderen VMs als auch vom Host aus
             # erreichbar ist. Für komplexere Tests sollte hier wahrscheinlich
@@ -35,16 +35,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             # Allgemeine Einstellungen die jede Maschine in Virtualbox bekommt.
             # Dieser Bereich kann an die Fähigkeiten des Hosts angepasst werden.
             machine.vm.provider 'virtualbox' do |vbox|
-                vbox.name = "ansibe_#{test_role}_#{machine_name}"
-                vbox.cpus = 1
-                vbox.memory = 1024
+                vbox.name = "ansibe_#{test_role}_#{guest[:name]}"
+                vbox.cpus = 2
+                vbox.memory = 2048
             end
 
             # Provisioniere, wenn die letzte Maschine hochgefahren wurde, alle
             # Maschinen mit Ansible. Würde dieser Block außerhalb einer einzigen
             # Maschinendefinition stehen, würde Ansible beim Hochfahren jeder
             # Maschine versuchen alle Maschinen zu konfigurieren
-            if index == machines.size - 1
+            if index == guests.size - 1
                 machine.vm.provision 'ansible', run: 'always' do |ansible|
                     ansible.playbook = 'test.yml'
                     #ansible.verbose = 'vvvv'
