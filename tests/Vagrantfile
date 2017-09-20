@@ -9,13 +9,32 @@
 guests = [
     { name: 'ubuntu', box: 'bento/ubuntu-17.04', groups: [] },
     { name: 'centos', box: 'centos/7',           groups: [] },
-#   { name: 'debian', box: 'debian/testing64',   groups: ['web', 'db'] },
+#   { name: 'debian', box: 'debian/testing64',   groups: [] },
+#   { name: 'example1', box: 'centos/7', groups: ['web', 'mon'] },
+#   { name: 'example2', box: 'centos/7', groups: ['db', 'mon'] },
 ]
+
+# Hier können zusätzliche Ansible Gruppen für das von Vagrant erstellte Inventory
+# angegeben werden. Die Gruppenzugehörigkeit von Clients sollte nicht hier
+# sondern in der in der groups Liste in der Definition der VM festgelegt werden.
+# So kann Vagrant die Namen mit denen die VMs erstellt werden selbst verwalten.
+# Auch sollten, obwohl ich ihre Verwendung im Beispiel demonstriere,
+# Gruppenvariablen besser in ein group_vars Verzeichnis ausgelagert werden.
+# Siehe hierzu auch die Ansible Dokumentation:
+# http://docs.ansible.com/ansible/latest/intro_inventory.html#splitting-out-host-and-group-specific-data
+# Wenn man trotzdem Gruppenvariablen hier definiert, ist zu beachten, dass
+# Booleans nur korrekt erkannt werden, wenn sie genau als 'True' und 'False'
+# geschrieben sind.
+ansible_groups = {
+#   'web:children': ['db'],
+#   'db:vars': { secure_setup: 'True' },
+#   'mon:vars': { monitoring_server: 'mon.example.com', monitorin_port: '1234' },
+}
 
 # Bestimme den Namen des Moduls das zu testen ist aus dem Basename des Parent
 # Directories des Directories in dem sich der Vagrantfile befindet
 test_role = File.basename( File.absolute_path('..') )
-ansible_groups = Hash.new([])
+ansible_groups.default = []
 
 VAGRANTFILE_API_VERSION = "2"
 
