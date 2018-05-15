@@ -74,7 +74,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                     #ansible.verbose = 'vvvv'
                     #ansible.host_key_checking = false
                     ansible.limit = 'all'
-                    ansible.sudo = false
+                    ansible.become = false
                     ansible.groups = ansible_groups
                     ansible.extra_vars = {
                         test_role: test_role,

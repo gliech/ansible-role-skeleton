@@ -1,3 +1,2 @@
-tests/.vagrant/
-tests/*.retry
-**/*.swp
+vagrant/.vagrant/
+vagrant/*.retry
