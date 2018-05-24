@@ -8,8 +8,8 @@ guests = [
     { name: 'centos', box: 'centos/7' },
 #   { name: 'ubuntu', box: 'bento/ubuntu-18.04' },
 #   { name: 'debian', box: 'debian/testing64' },
-    { name: 'example1', box: 'centos/6', groups: ['web', 'mon'], ip: '192.168.23.10', hostvars: { test: 42 } },
-    { name: 'example2', box: 'centos/7', groups: ['db', 'mon'], cpus: 2, mem: 1024 },
+#   { name: 'example1', box: 'centos/6', groups: ['web', 'mon'], ip: '192.168.23.10', hostvars: { test: 42 } },
+#   { name: 'example2', box: 'centos/7', groups: ['db', 'mon'], cpus: 2, mem: 1024 },
 ]
 
 ansible_cfg       = 'vagrant/ansible.cfg'
