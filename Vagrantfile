@@ -31,12 +31,39 @@ ansible_groups = {
 #   'mon:vars': { monitoring_server: 'mon.example.com', monitorin_port: '1234' },
 }
 
+# Dieser Vagrantfile kann Ansible entweder vom Host aus ausführen, oder eine
+# zuätzliche VM hochfahren, die als Ansible Controller fungiert. Dieses
+# Verhalten kann über die Variable ansible_mode angepasst werden. Als Werte
+# akzeptiert werden:
+# host  => Verwende Ansible auf dem Host mit dem 'ansible' Provisioner
+# guest => Fahre noch eine VM hoch und verwende 'ansible_local' als Provisioner
+# auto  => Verwende den 'ansible' Provisioner, wenn Abnsible auf dem Host
+#          installiert ist, ansonsten verwende 'ansible_local'
+ansible_mode = 'auto'
+
 # Bestimme den Namen des Moduls das zu testen ist aus dem Basename des 
 # Directories in dem sich der Vagrantfile befindet
 project_name = File.basename( File.absolute_path('.') )
 ansible_groups.default = []
-
+ansible_hostvars = {}
+ansible_hostvars.default = {}
 VAGRANTFILE_API_VERSION = "2"
+
+# Funktion um bestimmen zu können ob Ansible installiert ist
+def which(cmd)
+    exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
+    ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
+        exts.each { |ext|
+            exe = File.join(path, "#{cmd}#{ext}")
+            return exe if File.executable?(exe) && !File.directory?(exe)
+        }
+    end
+    return nil
+end
+
+if ansible_mode == 'auto'
+    ansible_mode = which('ansible-playbook') ? 'host' : 'guest'
+end
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
