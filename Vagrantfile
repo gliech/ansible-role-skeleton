@@ -1,20 +1,25 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Jedes Item dieses Arrays definiert den Namen, das Box Image und die Ansible 
-# Gruppen einer Virtuellen Machine die zum testen der Rolle gestartet werden
-# soll. In dieser Liste können je nach Bedarf Zeilen hinzugefügt oder entfernt
-# werden. Der Rest des Vagrantfiles sollte nur angepasst werden müssen wenn man
-# ein komplexeres Testszenario braucht.
+# Jedes Item dieses Arrays definiert eine Virtuelle Machine, die mit Ansible
+# verwaltet werden kann. Die Schlüssel name und box müssen in jedem Item
+# vorhanden sein. Der Rest der Schlüssel ist optional.
 guests = [
-    { name: 'centos', box: 'centos/7',           groups: [] },
-#   { name: 'ubuntu', box: 'bento/ubuntu-18.04', groups: [] },
-#   { name: 'debian', box: 'debian/testing64',   groups: [] },
-#   { name: 'example1', box: 'centos/7', groups: ['web', 'mon'] },
-#   { name: 'example2', box: 'centos/7', groups: ['db', 'mon'] },
+    { name: 'centos', box: 'centos/7' },
+#   { name: 'ubuntu', box: 'bento/ubuntu-18.04' },
+#   { name: 'debian', box: 'debian/testing64' },
+    { name: 'example1', box: 'centos/6', groups: ['web', 'mon'], ip: '192.168.23.10', hostvars: { test: 42 } },
+    { name: 'example2', box: 'centos/7', groups: ['db', 'mon'], cpus: 2, mem: 1024 },
 ]
 
-# Hier können zusätzliche Ansible Gruppen für das von Vagrant erstellte Inventory
+ansible_cfg       = 'vagrant/ansible.cfg'
+ansible_playbook  = 'vagrant/test.yml'
+vbox_default_cpus = 1
+vbox_default_mem  = 512
+vagrant_ip_prefix = '192.168.23'
+vagrant_ip_mask   = '255.255.255.0'
+
+# Hier können zusätzliche Ansible Gruppen für das von Vagrant erstellte Inventar
 # angegeben werden. Die Gruppenzugehörigkeit von Clients sollte nicht hier
 # sondern in der in der groups Liste in der Definition der VM festgelegt werden.
 # So kann Vagrant die Namen mit denen die VMs erstellt werden selbst verwalten.
@@ -38,16 +43,29 @@ ansible_groups = {
 # host  => Verwende Ansible auf dem Host mit dem 'ansible' Provisioner
 # guest => Fahre noch eine VM hoch und verwende 'ansible_local' als Provisioner
 # auto  => Verwende den 'ansible' Provisioner, wenn Abnsible auf dem Host
-#          installiert ist, ansonsten verwende 'ansible_local'
+#          installiert ist, ansonsten verwende 'ansible_local' mit zusätzlicher
+#          VM
 ansible_mode = 'auto'
+
+################################################
+# Ab hier sollte der Vagrantfile im Normalfall #
+# nicht mehr angepasst werden müssen!          #
+################################################
 
 # Bestimme den Namen des Moduls das zu testen ist aus dem Basename des 
 # Directories in dem sich der Vagrantfile befindet
 project_name = File.basename( File.absolute_path('.') )
 ansible_groups.default = []
-ansible_hostvars = {}
-ansible_hostvars.default = {}
+vagrant_ip_pool = [ "#{vagrant_ip_prefix}.0" ]
+ansible_hostvars = Hash.new()
+
 VAGRANTFILE_API_VERSION = "2"
+
+guests.each do |guest|
+    if guest.has_key?(:ip)
+        vagrant_ip_pool << guest[:ip]
+    end
+end
 
 # Funktion um bestimmen zu können ob Ansible installiert ist
 def which(cmd)
@@ -65,49 +83,127 @@ if ansible_mode == 'auto'
     ansible_mode = which('ansible-playbook') ? 'host' : 'guest'
 end
 
+unless ['host','guest'].include? ansible_mode
+    raise 'Could not determine how to execute Ansible. Maybe ansible_mode has a wrong value?'
+end
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # Konfiguration aller Maschinen die in guests definiert sind
     guests.each_with_index do |guest, index|
 
-        config.vm.define "#{project_name}-#{guest[:name]}" do |machine|
-            machine.vm.hostname = "#{project_name}-#{guest[:name]}"
+        vagrant_name = "#{project_name}-#{guest[:name]}"
+
+        config.vm.define vagrant_name do |machine|
+            machine.vm.hostname = vagrant_name
             machine.vm.box = guest[:box]
+
             # Jede Maschine bekommt eine IP im privaten Default Netzwerk von
             # Virtualbox, die sowohl von anderen VMs als auch vom Host aus
             # erreichbar ist. Für komplexere Tests sollte hier wahrscheinlich
             # trotzdem ein anderer Weg gewählt werden
-            machine.vm.network 'private_network', type: 'dhcp'
+            if guest.has_key?(:ip)
+                vagrant_ip = guest[:ip]
+            else
+                test_ip = 2
+                loop do
+                    vagrant_ip = "#{vagrant_ip_prefix}.#{test_ip}"
+                    break unless vagrant_ip_pool.include? vagrant_ip
+                    test_ip += 1
+                end
+                vagrant_ip_pool << vagrant_ip
+            end
+            machine.vm.network 'private_network',
+                ip: vagrant_ip,
+                netmask: vagrant_ip_mask,
+                virtualbox__intnet: "vagrant-#{project_name}-network"
+
+            ansible_hostvars[vagrant_name.to_sym] = {}
+            if guest.has_key?(:hostvars)
+                ansible_hostvars[vagrant_name.to_sym].update(guest[:hostvars])
+            end
+
+            if ansible_mode == 'guest'
+                connector = {
+                    ansible_ssh_host: vagrant_ip,
+                    ansible_ssh_private_key_file: "/machines/#{vagrant_name}/virtualbox/private_key",
+                }
+                ansible_hostvars[vagrant_name.to_sym].update(connector)
+            end
 
             # Allgemeine Einstellungen die jede Maschine in Virtualbox bekommt.
             # Dieser Bereich kann an die Fähigkeiten des Hosts angepasst werden.
             machine.vm.provider 'virtualbox' do |vbox|
-                vbox.name = "ansibe_#{project_name}_#{guest[:name]}"
-                vbox.cpus = 2
-                vbox.memory = 2048
+                vbox.name = "vagrant_#{project_name}_#{guest[:name]}"
+                vbox.cpus = guest.has_key?(:cpus) ? guest[:cpus] : vbox_default_cpus
+                vbox.memory = guest.has_key?(:mem) ? guest[:mem] : vbox_default_mem
             end
 
-            guest[:groups].each do |group|
-                ansible_groups[group] += ["#{project_name}-#{guest[:name]}"]
+            if guest.has_key?(:groups)
+                guest[:groups].each do |group|
+                    ansible_groups[group.to_sym] += [ vagrant_name ]
+                end
             end
 
             # Provisioniere, wenn die letzte Maschine hochgefahren wurde, alle
             # Maschinen mit Ansible. Würde dieser Block außerhalb einer einzigen
             # Maschinendefinition stehen, würde Ansible beim Hochfahren jeder
             # Maschine versuchen alle Maschinen zu konfigurieren
-            if index == guests.size - 1
+            if ansible_mode == 'host' and index == guests.size - 1
                 machine.vm.provision 'ansible', run: 'always' do |ansible|
-                    ansible.playbook = 'vagrant/test.yml'
-                    ansible.config_file = 'vagrant/ansible.cfg'
-                    #ansible.verbose = 'vvvv'
-                    #ansible.host_key_checking = false
+                    ansible.playbook = ansible_playbook
+                    ansible.config_file = ansible_cfg
                     ansible.limit = 'all'
                     ansible.become = false
                     ansible.groups = ansible_groups
+                    ansible.host_vars = ansible_hostvars
                     ansible.extra_vars = {
                         project_name: project_name,
                     }
                 end
+            end
+        end
+    end
+
+    if ansible_mode == 'guest'
+        config.vm.define "#{project_name}-provisioner" do |master|
+            master.vm.hostname = "#{project_name}-provisioner"
+            master.vm.box = "centos/7"
+            vagrant_ip = ''
+            test_ip = 2
+            loop do
+                vagrant_ip = "#{vagrant_ip_prefix}.#{test_ip}"
+                break unless vagrant_ip_pool.include? vagrant_ip
+                test_ip += 1
+            end
+            master.vm.network 'private_network',
+                ip: vagrant_ip,
+                netmask: vagrant_ip_mask,
+                virtualbox__intnet: "vagrant-#{project_name}-network"
+            master.vm.provider 'virtualbox' do |vbox|
+                vbox.name = "vagrant_#{project_name}_provisioner"
+                vbox.cpus = 1
+                vbox.memory = 256
+            end
+
+            guests.each do |guest|
+                ansible_groups[:slaves] += [ "#{project_name}-#{guest[:name]}" ]
+            end
+
+            config.vm.synced_folder '.', '/vagrant', disabled: true
+            master.vm.synced_folder ".", "/#{project_name}", type: "rsync"
+            master.vm.synced_folder "./.vagrant/machines", "/machines", type: "rsync"
+            master.vm.provision 'ansible_local', run: 'always' do |ansible|
+                ansible.provisioning_path = "/#{project_name}"
+                ansible.playbook = ansible_playbook
+                ansible.config_file = ansible_cfg
+                ansible.limit = 'slaves'
+                ansible.become = false
+                ansible.groups = ansible_groups
+                ansible.host_vars = ansible_hostvars
+                ansible.extra_vars = {
+                    project_name: project_name,
+                }
             end
         end
     end
