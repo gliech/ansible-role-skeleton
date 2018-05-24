@@ -7,8 +7,8 @@
 # werden. Der Rest des Vagrantfiles sollte nur angepasst werden müssen wenn man
 # ein komplexeres Testszenario braucht.
 guests = [
-    { name: 'ubuntu', box: 'bento/ubuntu-17.04', groups: [] },
     { name: 'centos', box: 'centos/7',           groups: [] },
+#   { name: 'ubuntu', box: 'bento/ubuntu-18.04', groups: [] },
 #   { name: 'debian', box: 'debian/testing64',   groups: [] },
 #   { name: 'example1', box: 'centos/7', groups: ['web', 'mon'] },
 #   { name: 'example2', box: 'centos/7', groups: ['db', 'mon'] },
@@ -31,9 +31,9 @@ ansible_groups = {
 #   'mon:vars': { monitoring_server: 'mon.example.com', monitorin_port: '1234' },
 }
 
-# Bestimme den Namen des Moduls das zu testen ist aus dem Basename des Parent
-# Directories des Directories in dem sich der Vagrantfile befindet
-test_role = File.basename( File.absolute_path('..') )
+# Bestimme den Namen des Moduls das zu testen ist aus dem Basename des 
+# Directories in dem sich der Vagrantfile befindet
+project_name = File.basename( File.absolute_path('.') )
 ansible_groups.default = []
 
 VAGRANTFILE_API_VERSION = "2"
@@ -43,8 +43,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Konfiguration aller Maschinen die in guests definiert sind
     guests.each_with_index do |guest, index|
 
-        config.vm.define "#{test_role}-#{guest[:name]}" do |machine|
-            machine.vm.hostname = "#{test_role}-#{guest[:name]}"
+        config.vm.define "#{project_name}-#{guest[:name]}" do |machine|
+            machine.vm.hostname = "#{project_name}-#{guest[:name]}"
             machine.vm.box = guest[:box]
             # Jede Maschine bekommt eine IP im privaten Default Netzwerk von
             # Virtualbox, die sowohl von anderen VMs als auch vom Host aus
@@ -55,13 +55,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             # Allgemeine Einstellungen die jede Maschine in Virtualbox bekommt.
             # Dieser Bereich kann an die Fähigkeiten des Hosts angepasst werden.
             machine.vm.provider 'virtualbox' do |vbox|
-                vbox.name = "ansibe_#{test_role}_#{guest[:name]}"
+                vbox.name = "ansibe_#{project_name}_#{guest[:name]}"
                 vbox.cpus = 2
                 vbox.memory = 2048
             end
 
             guest[:groups].each do |group|
-                ansible_groups[group] += ["#{test_role}-#{guest[:name]}"]
+                ansible_groups[group] += ["#{project_name}-#{guest[:name]}"]
             end
 
             # Provisioniere, wenn die letzte Maschine hochgefahren wurde, alle
@@ -70,14 +70,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             # Maschine versuchen alle Maschinen zu konfigurieren
             if index == guests.size - 1
                 machine.vm.provision 'ansible', run: 'always' do |ansible|
-                    ansible.playbook = 'test.yml'
+                    ansible.playbook = 'vagrant/test.yml'
+                    ansible.config_file = 'vagrant/ansible.cfg'
                     #ansible.verbose = 'vvvv'
                     #ansible.host_key_checking = false
                     ansible.limit = 'all'
                     ansible.become = false
                     ansible.groups = ansible_groups
                     ansible.extra_vars = {
-                        test_role: test_role,
+                        project_name: project_name,
                     }
                 end
             end

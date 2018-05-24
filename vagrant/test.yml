@@ -1,5 +1,5 @@
 ---
 - hosts: all
   roles:
-    - role: "{{ test_role }}"
+    - role: "{{ project_name }}"
 
