@@ -1,5 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+require 'digest'
+require 'ipaddr'
 
 # Jedes Item dieses Arrays definiert eine Virtuelle Machine, die mit Ansible
 # verwaltet werden kann. Die Schlüssel name und box müssen in jedem Item
@@ -8,7 +10,7 @@ guests = [
     { name: 'centos', box: 'centos/7' },
 #   { name: 'ubuntu', box: 'bento/ubuntu-18.04' },
 #   { name: 'debian', box: 'debian/testing64' },
-#   { name: 'example1', box: 'centos/6', groups: ['web', 'mon'], ip: '192.168.23.10', hostvars: { test: 42 } },
+#   { name: 'example1', box: 'centos/6', groups: ['web', 'mon'], ip: '10.10.10.2', hostvars: { test: 42 } },
 #   { name: 'example2', box: 'centos/7', groups: ['db', 'mon'], cpus: 2, mem: 1024 },
 ]
 
@@ -16,8 +18,8 @@ ansible_cfg       = 'vagrant/ansible.cfg'
 ansible_playbook  = 'vagrant/test.yml'
 vbox_default_cpus = 1
 vbox_default_mem  = 512
-vagrant_ip_prefix = '192.168.23'
-vagrant_ip_mask   = '255.255.255.0'
+vagrant_intnet    = '10.10.10.0'
+vagrant_netmask   = '255.255.255.0'
 
 # Hier können zusätzliche Ansible Gruppen für das von Vagrant erstellte Inventar
 # angegeben werden. Die Gruppenzugehörigkeit von Clients sollte nicht hier
@@ -47,27 +49,19 @@ ansible_groups = {
 #          VM
 ansible_mode = 'auto'
 
+# Vagrant Box die vom Provisioner im Guestmode genutzt wird. Sollte nur
+# verändert werden müssen, wenn die Box veraltet ist.
+provisioner_box = 'centos/7'
+
 ################################################
 # Ab hier sollte der Vagrantfile im Normalfall #
 # nicht mehr angepasst werden müssen!          #
 ################################################
 
-# Bestimme den Namen des Moduls das zu testen ist aus dem Basename des 
-# Directories in dem sich der Vagrantfile befindet
-project_name = File.basename( File.absolute_path('.') )
-ansible_groups.default = []
-vagrant_ip_pool = [ "#{vagrant_ip_prefix}.0" ]
-ansible_hostvars = Hash.new()
-
 VAGRANTFILE_API_VERSION = "2"
 
-guests.each do |guest|
-    if guest.has_key?(:ip)
-        vagrant_ip_pool << guest[:ip]
-    end
-end
-
-# Funktion um bestimmen zu können ob Ansible installiert ist
+# Funktion um zu bestimmen ob ein Programm auf der ausführenden Maschiene
+# installiert ist
 def which(cmd)
     exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
     ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
@@ -79,12 +73,51 @@ def which(cmd)
     return nil
 end
 
+# Bestimme in welchem Modus der Rest des Vagrantfiles ausgeführt werden soll
+# wenn 'auto' gewählt wurde
 if ansible_mode == 'auto'
     ansible_mode = which('ansible-playbook') ? 'host' : 'guest'
 end
 
 unless ['host','guest'].include? ansible_mode
     raise 'Could not determine how to execute Ansible. Maybe ansible_mode has a wrong value?'
+end
+
+# Bestimme den Namen des Moduls das zu testen ist aus dem Basename des 
+# Directories in dem sich der Vagrantfile befindet
+project_name = File.basename( File.absolute_path('.') )
+
+ansible_groups.default = []
+ansible_hostvars = Hash.new()
+
+# Abschnitt zum definieren des internen Netzwerks
+intnet_ip = IPAddr.new(vagrant_intnet)
+netmask_ip = IPAddr.new(vagrant_netmask)
+broadcast_ip = intnet_ip|(~netmask_ip)
+first_ip = intnet_ip|1
+
+# Pool definieren, in den schon verwendete, oder nicht benutzbare IP-Addressen
+# kommen. Die erste Addresse des Netzwerks wird nicht verwendet um Warnungen von
+# Virtualbox zu vermeiden.
+vagrant_ip_pool = [ intnet_ip, broadcast_ip, first_ip ]
+intnet = intnet_ip.mask(vagrant_netmask)
+
+# Wenn der Guestmode verwended wird, die letzte IP des Netzwerks für den Ansible
+# Controler reservieren
+if ansible_mode == 'guest'
+    last_ip = intnet_ip|(IPAddr.new('255.255.255.254')&(~netmask_ip))
+    vagrant_ip_pool << last_ip
+end
+
+guests.each do |guest|
+    if guest.has_key?(:ip)
+        guest_ip = IPAddr.new(guest[:ip])
+        if intnet.include?(guest_ip)
+            vagrant_ip_pool << guest_ip
+        else
+            raise "The custom IP #{guest[:ip]} of the VM #{guest[:name]} is not part of the specified internal network #{vagrant_intnet}/#{vagrant_netmask}."
+        end
+    end
 end
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -105,17 +138,22 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             if guest.has_key?(:ip)
                 vagrant_ip = guest[:ip]
             else
-                test_ip = 2
+                # Verwende den Namen der VM als Seed für einen RNG, mit dem eine
+                # zufällige IP-Addresse generiert wird. Durch Umformung wird die
+                # IP Adresse dann so verändert, dass sie sich im gleichen
+                # Subnetz wie alle anderen Adressen befindet.
+                guest_hash = Digest::SHA512.hexdigest(vagrant_name).to_i(16)
+                guest_rand = Random.new(guest_hash)
                 loop do
-                    vagrant_ip = "#{vagrant_ip_prefix}.#{test_ip}"
+                    raw_ip = IPAddr.new(guest_rand.rand(2**32), Socket::AF_INET)
+                    vagrant_ip = (raw_ip&(~netmask_ip))|intnet_ip
                     break unless vagrant_ip_pool.include? vagrant_ip
-                    test_ip += 1
                 end
                 vagrant_ip_pool << vagrant_ip
             end
             machine.vm.network 'private_network',
-                ip: vagrant_ip,
-                netmask: vagrant_ip_mask,
+                ip: vagrant_ip.to_s(),
+                netmask: netmask_ip.to_s(),
                 virtualbox__intnet: "vagrant-#{project_name}-network"
 
             ansible_hostvars[vagrant_name.to_sym] = {}
@@ -125,7 +163,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
             if ansible_mode == 'guest'
                 connector = {
-                    ansible_ssh_host: vagrant_ip,
+                    ansible_ssh_host: vagrant_ip.to_s(),
                     ansible_ssh_private_key_file: "/machines/#{vagrant_name}/virtualbox/private_key",
                 }
                 ansible_hostvars[vagrant_name.to_sym].update(connector)
@@ -145,10 +183,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                 end
             end
 
-            # Provisioniere, wenn die letzte Maschine hochgefahren wurde, alle
-            # Maschinen mit Ansible. Würde dieser Block außerhalb einer einzigen
-            # Maschinendefinition stehen, würde Ansible beim Hochfahren jeder
-            # Maschine versuchen alle Maschinen zu konfigurieren
+            # Provisioniere im Hostmode, wenn die letzte Maschine hochgefahren 
+            # wurde, alle Maschinen mit Ansible. Würde dieser Block außerhalb
+            # einer einzigen Maschinendefinition stehen, würde Ansible beim
+            # Hochfahren jeder Maschine versuchen alle Maschinen zu
+            # konfigurieren.
             if ansible_mode == 'host' and index == guests.size - 1
                 machine.vm.provision 'ansible', run: 'always' do |ansible|
                     ansible.playbook = ansible_playbook
@@ -168,17 +207,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     if ansible_mode == 'guest'
         config.vm.define "#{project_name}-provisioner" do |master|
             master.vm.hostname = "#{project_name}-provisioner"
-            master.vm.box = "centos/7"
-            vagrant_ip = ''
-            test_ip = 2
-            loop do
-                vagrant_ip = "#{vagrant_ip_prefix}.#{test_ip}"
-                break unless vagrant_ip_pool.include? vagrant_ip
-                test_ip += 1
-            end
+            master.vm.box = provisioner_box
+
             master.vm.network 'private_network',
-                ip: vagrant_ip,
-                netmask: vagrant_ip_mask,
+                ip: last_ip.to_s(),
+                netmask: netmask_ip.to_s(),
                 virtualbox__intnet: "vagrant-#{project_name}-network"
             master.vm.provider 'virtualbox' do |vbox|
                 vbox.name = "vagrant_#{project_name}_provisioner"
