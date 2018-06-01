@@ -8,6 +8,8 @@ require 'ipaddr'
 # vorhanden sein. Der Rest der Schlüssel ist optional.
 guests = [
     { name: 'centos', box: 'centos/7' },
+#   { name: 'sl6', box: 'bytepark/scientific-6.5-64' },
+#   { name: 'sl7', box: 'ropsu/scientific7_x86_64_minimal' },
 #   { name: 'ubuntu', box: 'bento/ubuntu-18.04' },
 #   { name: 'debian', box: 'debian/testing64' },
 #   { name: 'example1', box: 'centos/6', groups: ['web', 'mon'], ip: '10.10.10.2', hostvars: { test: 42 } },
@@ -223,12 +225,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                 ansible_groups[:slaves] += [ "#{project_name}-#{guest[:name]}" ]
             end
 
-            config.vm.synced_folder '.', '/vagrant', disabled: true
-            master.vm.synced_folder ".", "/#{project_name}", type: "rsync"
-            master.vm.synced_folder "./.vagrant/machines", "/machines", type: "rsync"
+            config.vm.synced_folder '.', '/vagrant',
+                disabled: true
+            master.vm.synced_folder ".", "/#{project_name}",
+                type: "rsync"
+            master.vm.synced_folder "./.vagrant/machines", "/machines",
+                type: "rsync",
+                rsync__args: [ "--verbose", "--archive", "--delete", "-z", "--copy-links", "--chmod=D700,F600"]
+
             master.vm.provision 'ansible_local', run: 'always' do |ansible|
                 ansible.provisioning_path = "/#{project_name}"
                 ansible.playbook = ansible_playbook
+                # Färbe den Output von ansible_local ein wie natives Ansible
+                ansible.playbook_command = 'PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook'
                 ansible.config_file = ansible_cfg
                 ansible.limit = 'slaves'
                 ansible.become = false
