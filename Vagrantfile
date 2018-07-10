@@ -1,7 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
-# TODO: install_python provisioner
-#       ansible-galaxy support (detect requirements file, explain no deps)
+# TODO: ansible-galaxy support (detect requirements file, explain no deps)
 
 require 'set'
 require 'digest'
@@ -21,16 +20,18 @@ guests = [
 #   { name: 'sl7', box: 'ropsu/scientific7_x86_64_minimal' },
 #   { name: 'ubuntu', box: 'bento/ubuntu-18.04' },
 #   { name: 'debian', box: 'debian/testing64' },
+#   { name: 'arch', box: 'archlinux/archlinux' },
 #   { name: 'example1', box: 'centos/6', groups: ['web', 'mon'], ip: '10.10.10.2', hostvars: { test: 42 } },
 #   { name: 'example2', box: 'centos/7', groups: ['db', 'mon'], cpus: 2, mem: 1024 },
 ]
 
-ansible_cfg       = 'vagrant/ansible.cfg'
-ansible_playbook  = 'vagrant/playbook.yml'
-vbox_default_cpus = 1
-vbox_default_mem  = 512
-vagrant_intnet    = '10.10.10.0'
-vagrant_netmask   = '255.255.255.0'
+ansible_cfg          = 'vagrant/ansible.cfg'
+ansible_playbook     = 'vagrant/playbook.yml'
+ansible_requirements = 'vagrant/requirements.yml'
+vbox_default_cpus    = 1
+vbox_default_mem     = 512
+vagrant_intnet       = '10.10.10.0'
+vagrant_netmask      = '255.255.255.0'
 
 vagrant_intnet_dhcp = false
 dhcp_range_start    = '10.10.10.10'
@@ -63,7 +64,7 @@ ansible_groups = {
 # auto  => Verwende den 'ansible' Provisioner, wenn Abnsible auf dem Host
 #          installiert ist, ansonsten verwende 'ansible_local' mit zusätzlicher
 #          VM
-ansible_mode = 'guest'
+ansible_mode = 'auto'
 
 # Vagrant Boxen die von den beiden zusätzlichen VMs benutzt werden, die je nach
 # Konfiguration hochgefahren werden. Sollte nur verändert werden müssen, wenn
@@ -103,10 +104,14 @@ end
 
 # Bestimme den Namen des Moduls das zu testen ist aus dem Basename des 
 # Directories in dem sich der Vagrantfile befindet
-role_name = File.basename( File.absolute_path('.') )
+role_name = File.basename( File.dirname(__FILE__) )
 unless defined?(project_name)
     project_name = role_name
 end
+
+# Bestimme ob es einen requirements File gibt, der von Ansible ausgeführt
+# werden muss
+run_galaxy = File.file?(File.join( File.dirname(__FILE__), ansible_requirements ))
 
 # Wandele die Konfigurationsschlüssel zum internen Netzwerk der VMs in IPAddr
 # Objekte um, um später mit ihnen rechnen zu können.
@@ -325,6 +330,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                 machine.vm.synced_folder '.', '/vagrant',
                     type: "rsync"
             end
+
+            machine.vm.provision 'shell',
+                path: 'vagrant/install-python.sh'
 
             if vagrant_intnet_dhcp and guest[:name] == 'dhcp'
                 machine.vm.provision 'ansible_local' do |ansible|
