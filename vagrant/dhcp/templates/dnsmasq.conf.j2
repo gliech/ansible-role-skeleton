@@ -9,7 +9,7 @@ domain={{ dhcp_domain }}
 dhcp-option=option:router
 dhcp-authoritative
 {% for hostname, ip in dhcp_static_ips.items() %}
-host-record={{hostname}},{{ ip }}
+host-record={{ hostname }}.{{ dhcp_domain }},{{ ip }}
 {% endfor %}
 
 conf-dir=/etc/dnsmasq.d
