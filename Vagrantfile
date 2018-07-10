@@ -28,6 +28,7 @@ guests = [
 ansible_cfg          = 'vagrant/ansible.cfg'
 ansible_playbook     = 'vagrant/playbook.yml'
 ansible_requirements = 'vagrant/requirements.yml'
+ansible_galaxy_force = false
 vbox_default_cpus    = 1
 vbox_default_mem     = 512
 vagrant_intnet       = '10.10.10.0'
@@ -112,6 +113,8 @@ end
 # Bestimme ob es einen requirements File gibt, der von Ansible ausgeführt
 # werden muss
 run_galaxy = File.file?(File.join( File.dirname(__FILE__), ansible_requirements ))
+galaxy_cmd = 'ansible-galaxy install --role-file=%{role_file} --roles-path=%{roles_path}' + (ansible_galaxy_force ? ' --force' : '')
+
 
 # Wandele die Konfigurationsschlüssel zum internen Netzwerk der VMs in IPAddr
 # Objekte um, um später mit ihnen rechnen zu können.
@@ -367,6 +370,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                     ansible.playbook = ansible_playbook
                     # Färbe den Output von ansible_local ein wie natives Ansible
                     ansible.playbook_command = 'PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook'
+                    if run_galaxy
+                        ansible.galaxy_role_file = ansible_requirements
+                        ansible.galaxy_command = galaxy_cmd
+                    end
                     ansible.config_file = ansible_cfg
                     ansible.limit = 'all'
                     ansible.become = false
@@ -386,6 +393,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             if ansible_mode == 'host' and index == guests.size - 1
                 machine.vm.provision 'ansible', run: 'always' do |ansible|
                     ansible.playbook = ansible_playbook
+                    if run_galaxy
+                        ansible.galaxy_role_file = ansible_requirements
+                        ansible.galaxy_command = galaxy_cmd
+                    end
                     ansible.config_file = ansible_cfg
                     ansible.limit = 'all'
                     ansible.become = false
