@@ -28,7 +28,10 @@ guests = [
 ansible_cfg          = 'vagrant/ansible.cfg'
 ansible_playbook     = 'vagrant/playbook.yml'
 ansible_requirements = 'vagrant/requirements.yml'
+ansible_roles_host   = 'vagrant/roles'
+ansible_roles_guest  = 'vagrant/roles'
 ansible_galaxy_force = false
+ansible_galaxy_sudo  = false
 vbox_default_cpus    = 1
 vbox_default_mem     = 512
 vagrant_intnet       = '10.10.10.0'
@@ -113,7 +116,10 @@ end
 # Bestimme ob es einen requirements File gibt, der von Ansible ausgeführt
 # werden muss
 run_galaxy = File.file?(File.join( File.dirname(__FILE__), ansible_requirements ))
-galaxy_cmd = 'ansible-galaxy install --role-file=%{role_file} --roles-path=%{roles_path}' + (ansible_galaxy_force ? ' --force' : '')
+galaxy_cmd = ( ansible_galaxy_sudo ? 'sudo ' : '' ) +
+    'ansible-galaxy install --role-file=%{role_file} --roles-path=' +
+    ( ansible_mode == 'host' ? ansible_roles_host : ansible_roles_guest ) +
+    ( ansible_galaxy_force ? ' --force ' : '' )
 
 
 # Wandele die Konfigurationsschlüssel zum internen Netzwerk der VMs in IPAddr
