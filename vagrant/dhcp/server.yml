@@ -9,7 +9,7 @@
 
     - name: Generate dnsmasq.conf
       template:
-        src: dnsmasq.conf.j2
+        src: dnsmasq-conf
         dest: /etc/dnsmasq.conf
         validate: 'dnsmasq --test --conf-file=%s'
       become: yes
