@@ -3,10 +3,10 @@ then
     echo 'Installing Python.'
     if which yum >& /dev/null
     then
-        yum -yq install python || exit 2
-    elif which apt >& /dev/null
+        yum --assumeyes --quiet install python || exit 2
+    elif which apt-get >& /dev/null
     then
-        apt -yqq install python || exit 2
+        apt-get --yes --quiet=2 --no-install-recommend install python || exit 2
     elif which pacman >& /dev/null
     then
         pacman --noconfirm --noprogressbar --needed -S python || exit 2
