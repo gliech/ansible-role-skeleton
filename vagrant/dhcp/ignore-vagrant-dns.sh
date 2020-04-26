@@ -1,7 +1,10 @@
 if ! which chattr >& /dev/null
 then
     echo 'Installing Filesystem Utilities.'
-    if which yum >& /dev/null
+    if which dnf >& /dev/null
+    then
+        dnf --assumeyes --quiet --errorlevel=0 --nogpgcheck install e2fsprogs || exit 2
+    elif which yum >& /dev/null
     then
         yum --assumeyes --quiet --errorlevel=0 --nogpgcheck install e2fsprogs || exit 2
     elif which apt-get >& /dev/null
