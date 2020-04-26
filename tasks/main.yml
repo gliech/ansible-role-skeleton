@@ -1,4 +1,4 @@
 ---
-- name: Eine Hallo-Welt-Nachricht
+- name: A dummy task
   debug:
     msg: 'Hello World!'
