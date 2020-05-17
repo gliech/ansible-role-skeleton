@@ -10,7 +10,7 @@ then
    elif which apt-get >& /dev/null
    then
       apt-get --yes --quiet=2 --no-install-recommend install python3 || exit 2
-   elif which pacman >& /dev/null
+   elif [[ -x /usr/bin/pacman ]]
    then
       pacman --sync --noconfirm --noprogressbar --needed --quiet python3 || exit 2
    else
