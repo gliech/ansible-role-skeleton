@@ -1,14 +1,5 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
-{#
-TODO:
-- Support for Ansible Tags
-- Support for Ansible Vault
-- Per Host Port Forwarding definitions
-- Documentation of configuration options
-- Document the fact, that Ansible Galaxy dependencies have to be set manually in the requirements file
-- Add a README.md skeleton ( heading: rolen-name [WIP], sections for variables etc.)
-#}
 require 'set'
 require 'digest'
 require 'ipaddr'
@@ -22,8 +13,8 @@ require 'ipaddr'
 # verwaltet werden kann. Die Schlüssel name und box müssen in jedem Item
 # vorhanden sein. Der Rest der Schlüssel ist optional.
 guests = [
-    { name: 'centos', box: 'centos/8' },
-#   { name: 'fedora', box: 'bento/fedora-31' },
+#   { name: 'centos', box: 'centos/8' },
+    { name: 'fedora', box: 'bento/fedora-31' },
 #   { name: 'ubuntu', box: 'bento/ubuntu-18.04' },
 #   { name: 'debian', box: 'debian/testing64' },
 #   { name: 'arch', box: 'archlinux/archlinux' },
