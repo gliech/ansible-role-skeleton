@@ -1,0 +1,10 @@
+---
+dependencies: []
+
+galaxy_info:
+  role_name: ansible-role-skeleton
+  author: gliech
+  description: Deploys the master branch of this repository as system-wide
+    ansible-galaxy role skeleton
+  min_ansible_version: 2.9
+  galaxy_tags: []

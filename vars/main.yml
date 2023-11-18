@@ -1,0 +1,4 @@
+---
+role_skeleton_ansible_cfg_file: /etc/ansible/ansible.cfg
+role_skeleton_location: /etc/ansible/role_skeleton
+role_skeleton_repository: https://github.com/gliech/ansible-role-skeleton
