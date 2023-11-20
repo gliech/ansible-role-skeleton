@@ -1,0 +1,11 @@
+---
+on:
+  push:
+name: main
+jobs:
+  release:
+    name: test & release
+    uses:
+      gliech/semantic-release-config-github-ansible-role/.github/workflows/test_release.yml@v1
+    secrets:
+      ANSIBLE_GALAXY_API_KEY: ${{ secrets.ANSIBLE_GALAXY_API_KEY }}

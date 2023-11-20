@@ -1,14 +1,16 @@
 ---
 - name: Sync the ansible-role-skeleton repository
-  git:
-    repo: "{{ role_skeleton_repository }}"
+  ansible.builtin.copy:
+    src: "files/role"
     dest: "{{ role_skeleton_location }}"
-    version: "{{ role_skeleton_branch }}"
+    mode: 0644
+    directory_mode: 0755
   become: yes
 
 - name: Write the role skeleton into the global ansible.cfg
-  ini_file:
+  community.general.ini_file:
     path: "{{ role_skeleton_ansible_cfg_file }}"
+    mode: 0644
     section: galaxy
     option: role_skeleton
     value: "{{ role_skeleton_location }}"

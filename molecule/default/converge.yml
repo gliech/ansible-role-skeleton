@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Import ansible_role_skeleton"
+      ansible.builtin.import_role:
+        name: "gliech.ansible_role_skeleton"
