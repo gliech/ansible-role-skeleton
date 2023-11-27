@@ -1,0 +1,11 @@
+---
+- name: Prepare Archlinux
+  hosts: all
+  tasks: []
+  # Needed for roles that install packages
+  # - name: Initialize package cache
+  #   ansible.builtin.package:
+  #     update_cache: yes
+  #     upgrade: yes
+  #   become: yes
+  #   when: ansible_pkg_mgr in ['apt', 'pacman']

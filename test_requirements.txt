@@ -1,0 +1,5 @@
+ansible == 8.*
+molecule == 5.*
+molecule-plugins[podman] == 23.*
+yamllint == 1.*
+ansible-lint == 6.*

@@ -1,0 +1,9 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Import {{ role_name }}"
+      ansible.builtin.import_role:
+        name: "gliech.{{ role_name }}"
+      vars:
+        common_configure_connection: ssh

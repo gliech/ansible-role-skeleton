@@ -1,5 +1,0 @@
----
-- hosts: guests
-  roles:
-    - role: "{{ role_name }}"
-

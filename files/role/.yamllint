@@ -1,0 +1,12 @@
+---
+extends: default
+ignore: __pypackages__/
+rules:
+  truthy:
+    allowed-values:
+      - 'true'
+      - 'false'
+      - 'yes'
+      - 'no'
+    ignore:
+      - .github/workflows/

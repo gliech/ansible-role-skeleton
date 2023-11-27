@@ -1,10 +1,32 @@
 ---
 dependencies: []
-
 galaxy_info:
   role_name: {{ role_name }}
-  author: Change Me
+  author: gliech
   description: Ansible role that contains configurations for {{ role_name }}
-  license: BSD
+  license: GPL-3.0-only
   min_ansible_version: 2.9
+  platforms:
+    - name: EL
+      versions:
+        - "9"
+        - "8"
+    - name: Fedora
+      versions:
+        - "39"
+        - "38"
+        - "37"
+        - "36"
+        - "35"
+    - name: Ubuntu
+      versions:
+        - jammy
+        - focal
+    - name: Debian
+      versions:
+        - bookworm
+        - bullseye
+    - name: ArchLinux
+      versions:
+        - all
   galaxy_tags: []
