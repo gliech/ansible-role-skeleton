@@ -20,7 +20,7 @@ is not installed on the target host.
 
 <table>
 <tr><th>Name</th><th>Required</th><th>Type / Choices</th><th>Description</th></tr>
-<tr><td><code>role_skeleton_author</code></td>
+<tr><td><code>ansible_role_skeleton_author</code></td>
 <td>no</td>
 <td>string</td>
 <td>
@@ -48,7 +48,7 @@ None.
     - ansible.builtin.import_role:
         name: gliech.ansible_role_skeleton
       vars:
-        role_skeleton_author: me
+        ansible_role_skeleton_author: me
 ```
 
 

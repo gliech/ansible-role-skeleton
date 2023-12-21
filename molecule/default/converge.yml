@@ -6,4 +6,4 @@
       ansible.builtin.import_role:
         name: "gliech.ansible_role_skeleton"
       vars:
-        role_skeleton_author: gliech
+        ansible_role_skeleton_author: gliech
