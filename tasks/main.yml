@@ -1,11 +1,24 @@
 ---
-- name: Sync the ansible-role-skeleton repository
+- name: Move role skeleton to destination
   ansible.builtin.copy:
-    src: "files/role"
+    src: "files/role/"
     dest: "{{ role_skeleton_location }}"
     mode: 0644
     directory_mode: 0755
+
+- name: Pre-template files that contain the author name
+  ansible.builtin.template:
+    src: "{{ item | replace('/', '-') }}"
+    dest: "{{ role_skeleton_location }}/{{ item }}"
+    mode: 0644
+    block_start_string: "[%"
+    block_end_string: "%]"
+    variable_start_string: "[["
+    variable_end_string: "]]"
   become: yes
+  loop:
+    - meta/main.yml.j2
+    - molecule/default/converge.yml.j2
 
 - name: Write the role skeleton into the global ansible.cfg
   community.general.ini_file:
