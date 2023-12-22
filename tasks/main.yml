@@ -28,7 +28,7 @@
 - name: Create files with with additional template vars
   ansible.builtin.template:
     src: "{{ item.src }}"
-    dest: "{{ role_skeleton_location }}/{{ item.path }}"
+    dest: "{{ role_skeleton_location }}/{{ item.path.removesuffix('.tmpl') }}"
     mode: 0644
     block_start_string: "[%"
     block_end_string: "%]"
