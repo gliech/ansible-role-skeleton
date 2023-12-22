@@ -6,7 +6,7 @@ This Ansible role creates my custom Ansible Galaxy role skeleton on the target
 host. In addition to the normal components of an Ansible role, my role skeleton
 contains a basic setup for testing with Ansible Molecule, yamllint and
 ansible-lint, as well as a github actions pipeline that utilizes my own
-[semantic-release sharable configuration][2] to to create new versions of the
+[semantic-release sharable configuration][4] to to create new versions of the
 role and publish it to Ansible Galaxy.
 
 ## Requirements
