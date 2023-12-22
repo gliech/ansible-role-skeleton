@@ -10,4 +10,4 @@ rules:
       - 'no'
     ignore:
       - .github/workflows/
-      - files/role/.github/workflows/
+      - files/role_skeleton/.github/workflows/
