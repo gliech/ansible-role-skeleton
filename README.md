@@ -1,20 +1,18 @@
-# Ansible Galaxy Role Skeleton
+# [Ansible Galaxy Role Skeleton][1]
 
-[![main](https://github.com/gliech/ansible-role-skeleton/actions/workflows/main.yml/badge.svg)](https://github.com/gliech/ansible-role-skeleton/actions/workflows/main.yml)
+[![test & release][2]][3]
 
 This Ansible role creates my custom Ansible Galaxy role skeleton on the target
 host. In addition to the normal components of an Ansible role, my role skeleton
 contains a basic setup for testing with Ansible Molecule, yamllint and
 ansible-lint, as well as a github actions pipeline that utilizes my own
-(semantic-release sharable configuration)[1] to to create new versions of the
+[semantic-release sharable configuration][2] to to create new versions of the
 role and publish it to Ansible Galaxy.
-
 
 ## Requirements
 
 Strictly speaking: None, but the created files will be of little use, if Ansible
 is not installed on the target host.
-
 
 ## Role Variables
 
@@ -34,11 +32,9 @@ ansible role, when we put the skeleton on the host.
 </td></tr>
 </table>
 
-
 ## Dependencies
 
 None.
-
 
 ## Example Playbook
 
@@ -51,10 +47,11 @@ None.
         ansible_role_skeleton_author: me
 ```
 
-
 ## License
 
 This project is licensed under the terms of the [GNU General Public License v3.0](LICENSE)
 
-
-[1]: https://github.com/gliech/semantic-release-config-github-ansible-role
+[1]: https://galaxy.ansible.com/ui/standalone/roles/gliech/ansible_role_skeleton/
+[2]: https://github.com/gliech/ansible-role-skeleton/actions/workflows/release.yml/badge.svg
+[3]: https://github.com/gliech/ansible-role-skeleton/actions/workflows/release.yml
+[4]: https://github.com/gliech/semantic-release-config-github-ansible-role
