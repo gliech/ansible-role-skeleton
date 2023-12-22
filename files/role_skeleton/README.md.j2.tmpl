@@ -1,0 +1,56 @@
+# [[[ ansible_role_skeleton_title_pattern ]]][1]
+
+[![test & release][2]][3]
+
+<!--
+A brief description of the role goes here.
+--!>
+
+## Requirements
+
+None.
+
+## Role Variables
+
+None.
+
+<!--
+<table>
+<tr><th>Name</th><th>Required</th><th>Type / Choices</th><th>Description</th></tr>
+<tr><td><code>{{ role_name }}_example_var</code></td>
+<td>no</td>
+<td>string</td>
+<td>
+
+A description of the settable variables for this role should go here, including
+any variables that are in defaults/main.yml, vars/main.yml, and any variables
+that can/should be set via parameters to the role. Any variables that are read
+from other roles and/or the global scope (ie. hostvars, group vars, etc.) should
+be mentioned here as well.
+
+**Default:** `"some string"`
+</td></tr>
+</table>
+--!>
+
+## Dependencies
+
+None.
+
+## Example Playbook
+
+```yaml
+- hosts: all
+  tasks:
+    - ansible.builtin.import_role:
+        name: [[ ansible_role_skeleton_author ]].{{ role_name }}
+```
+
+## License
+
+This project is licensed under the terms of the [GNU General Public License v3.0](LICENSE)
+
+[1]: https://galaxy.ansible.com/ui/standalone/roles/[[ ansible_role_skeleton_author ]]/{{ role_name }}/
+[2]: https://github.com/[[ ansible_role_skeleton_author ]]/[[ ansible_role_skeleton_repo_pattern ]]/actions/workflows/release.yml/badge.svg
+[3]: https://github.com/[[ ansible_role_skeleton_author ]]/[[ ansible_role_skeleton_repo_pattern ]]/actions/workflows/release.yml
+[4]: https://github.com/gliech/semantic-release-config-github-ansible-role

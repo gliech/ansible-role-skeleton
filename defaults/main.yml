@@ -1,2 +1,6 @@
 ---
 ansible_role_skeleton_author: change_me
+ansible_role_skeleton_repo_pattern: >-
+  {% raw %}{{ role_name | replace("_", "-") }}-ansible-role{% endraw %}
+ansible_role_skeleton_title_pattern: >-
+  {% raw %}{{ role_name | replace("_", " ") | title }} Ansible Role{% endraw %}

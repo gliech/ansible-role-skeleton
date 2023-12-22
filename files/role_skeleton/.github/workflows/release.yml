@@ -1,10 +1,10 @@
 ---
 on:
   push:
-name: main
+name: test & release
 jobs:
-  release:
-    name: test & release
+  main:
+    name: main
     uses:
       gliech/semantic-release-config-github-ansible-role/.github/workflows/test_release.yml@v1
     secrets:

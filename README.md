@@ -30,6 +30,30 @@ ansible role, when we put the skeleton on the host.
 
 **Default:** `"change_me"`
 </td></tr>
+
+
+<tr><td><code>ansible_role_skeleton_repo_pattern</code></td>
+<td>no</td>
+<td>string</td>
+<td>
+
+Jinja2 template string that describes how the name of the github repository is
+derived from the name of the name of the role. The default pattern replaces
+underscores in the role name with dashes and appends "ansible-role" to the
+repository name
+
+**Default:** `"{{ role_name | replace("_", "-") }}-ansible-role"`
+/td></tr>
+<<tr><td><code>ansible_role_skeleton_title_pattern</code></td>
+<td>no</td>
+<td>string</td>
+<td>
+
+Same idea as the `ansible_role_skeleton_repo_pattern`, but for the title as it
+appears in the `README.md`.
+
+**Default:** `"{{ role_name | replace("_", " ") | title }} Ansible Role"`
+</td></tr>
 </table>
 
 ## Dependencies
