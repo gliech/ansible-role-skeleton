@@ -43,8 +43,10 @@ underscores in the role name with dashes and appends "ansible-role" to the
 repository name
 
 **Default:** `"{{ role_name | replace("_", "-") }}-ansible-role"`
-/td></tr>
-<<tr><td><code>ansible_role_skeleton_title_pattern</code></td>
+</td></tr>
+
+
+<tr><td><code>ansible_role_skeleton_title_pattern</code></td>
 <td>no</td>
 <td>string</td>
 <td>
