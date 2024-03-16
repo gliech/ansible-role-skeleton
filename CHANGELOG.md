@@ -1,3 +1,26 @@
+# [1.2.0](https://github.com/gliech/ansible-role-skeleton/compare/v1.1.0...v1.2.0) (2024-03-16)
+
+
+### Features
+
+* template molecule.yml to customize container names ([82dc3ff](https://github.com/gliech/ansible-role-skeleton/commit/82dc3ff88fb474de5f7ae9a1f4bd1ff0e005d019))
+
+
+### Bug Fixes
+
+* mirror some minor alterations to the role into the role template ([025525e](https://github.com/gliech/ansible-role-skeleton/commit/025525e36bf1c3c4349f2a8d7e3aad4db44608ab))
+* **molecule:** clean up some errors in the prepare and cleanup playbooks ([a5006b2](https://github.com/gliech/ansible-role-skeleton/commit/a5006b2813084f93593fd5d8704675e71de900a2))
+
+
+### Documentation
+
+* fix typo in readme ([7f2d789](https://github.com/gliech/ansible-role-skeleton/commit/7f2d789995cd6b5a3c9b20c91130cca91a88f6d1))
+
+
+### Dependency Updates
+
+* update package version for the test environment ([d9fa6c0](https://github.com/gliech/ansible-role-skeleton/commit/d9fa6c0f525da8cb6e614bd7ee26df70f948ae2f))
+
 # [1.1.0](https://github.com/gliech/ansible-role-skeleton/compare/v1.0.0...v1.1.0) (2023-12-23)
 
 
