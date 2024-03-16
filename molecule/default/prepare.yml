@@ -1,9 +1,5 @@
 ---
-- name: Prepare Archlinux
+- name: Prepare
   hosts: all
-  tasks:
-    - name: Initialize package cache
-      community.general.pacman:
-        update_cache: yes
-        upgrade: yes
-      become: yes
+  gather_facts: no
+  tasks: []

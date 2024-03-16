@@ -1,8 +1,10 @@
 ---
-- name: Prepare Archlinux
+- name: Prepare
   hosts: all
+  gather_facts: no
   tasks: []
-  # Needed for roles that install packages
+  # Needed for roles that install packages. Remove gather_facts statement if
+  # used.
   # - name: Initialize package cache
   #   ansible.builtin.package:
   #     update_cache: yes
