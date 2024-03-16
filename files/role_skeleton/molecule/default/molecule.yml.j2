@@ -7,84 +7,84 @@ dependency:
 driver:
   name: podman
 platforms:
-  - name: mol-common-arch
+  - name: mol-{{ role_name }}-arch
     image: docker.io/gliech/docker-archlinux-ansible:branch-master
     pre_build_image: true
     privileged: true
     override_command: false
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  - name: mol-common-fedora39
+  - name: mol-{{ role_name }}-fedora39
     image: docker.io/geerlingguy/docker-fedora39-ansible
     pre_build_image: true
     privileged: true
     override_command: false
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  - name: mol-common-fedora38
+  - name: mol-{{ role_name }}-fedora38
     image: docker.io/geerlingguy/docker-fedora38-ansible
     pre_build_image: true
     privileged: true
     override_command: false
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  - name: mol-common-fedora37
+  - name: mol-{{ role_name }}-fedora37
     image: docker.io/geerlingguy/docker-fedora37-ansible
     pre_build_image: true
     privileged: true
     override_command: false
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  - name: mol-common-fedora36
+  - name: mol-{{ role_name }}-fedora36
     image: docker.io/geerlingguy/docker-fedora36-ansible
     pre_build_image: true
     privileged: true
     override_command: false
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  - name: mol-common-fedora35
+  - name: mol-{{ role_name }}-fedora35
     image: docker.io/geerlingguy/docker-fedora35-ansible
     pre_build_image: true
     privileged: true
     override_command: false
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  - name: mol-common-rocky9
+  - name: mol-{{ role_name }}-rocky9
     image: docker.io/geerlingguy/docker-rockylinux9-ansible
     pre_build_image: true
     privileged: true
     override_command: false
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  - name: mol-common-rocky8
+  - name: mol-{{ role_name }}-rocky8
     image: docker.io/geerlingguy/docker-rockylinux8-ansible
     pre_build_image: true
     privileged: true
     override_command: false
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  - name: mol-common-debian12
+  - name: mol-{{ role_name }}-debian12
     image: docker.io/geerlingguy/docker-debian12-ansible
     pre_build_image: true
     privileged: true
     override_command: false
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  - name: mol-common-debian11
+  - name: mol-{{ role_name }}-debian11
     image: docker.io/geerlingguy/docker-debian11-ansible
     pre_build_image: true
     privileged: true
     override_command: false
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  - name: mol-common-ubuntu2204
+  - name: mol-{{ role_name }}-ubuntu2204
     image: docker.io/geerlingguy/docker-ubuntu2204-ansible
     pre_build_image: true
     privileged: true
     override_command: false
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  - name: mol-common-ubuntu2004
+  - name: mol-{{ role_name }}-ubuntu2004
     image: docker.io/geerlingguy/docker-ubuntu2004-ansible
     pre_build_image: true
     privileged: true
