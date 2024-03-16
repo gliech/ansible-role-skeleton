@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/gliech/ansible-role-skeleton/compare/v1.2.0...v1.2.1) (2024-03-16)
+
+
+### Dependency Updates
+
+* update ansible-lint version ([76a145e](https://github.com/gliech/ansible-role-skeleton/commit/76a145e511234ce2e036d96745d51f05f28575a7))
+
 # [1.2.0](https://github.com/gliech/ansible-role-skeleton/compare/v1.1.0...v1.2.0) (2024-03-16)
 
 
