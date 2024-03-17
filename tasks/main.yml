@@ -2,7 +2,7 @@
 
 - name: Create directory structure
   ansible.builtin.file:
-    path: "{{ role_skeleton_location }}/{{ item.path }}"
+    path: "{{ ansible_role_skeleton_location }}/{{ item.path }}"
     mode: 0755
     state: directory
   loop: "{{
@@ -15,7 +15,7 @@
 - name: Create normal files
   ansible.builtin.copy:
     src: "{{ item.src }}"
-    dest: "{{ role_skeleton_location }}/{{ item.path }}"
+    dest: "{{ ansible_role_skeleton_location }}/{{ item.path }}"
     mode: 0644
   loop: "{{
     query('community.general.filetree', 'files/role_skeleton/') |
@@ -28,7 +28,7 @@
 - name: Create files with with additional template vars
   ansible.builtin.template:
     src: "{{ item.src }}"
-    dest: "{{ role_skeleton_location }}/{{ item.path.removesuffix('.tmpl') }}"
+    dest: "{{ ansible_role_skeleton_location }}/{{ item.path.removesuffix('.tmpl') }}"
     mode: 0644
     block_start_string: "[%"
     block_end_string: "%]"
@@ -44,9 +44,9 @@
 
 - name: Write the role skeleton into the global ansible.cfg
   community.general.ini_file:
-    path: "{{ role_skeleton_ansible_cfg_file }}"
+    path: "{{ ansible_role_skeleton_ansible_cfg_file }}"
     mode: 0644
     section: galaxy
     option: role_skeleton
-    value: "{{ role_skeleton_location }}"
+    value: "{{ ansible_role_skeleton_location }}"
   become: yes
