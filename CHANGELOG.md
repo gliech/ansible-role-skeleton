@@ -1,3 +1,16 @@
+## [1.2.2](https://github.com/gliech/ansible-role-skeleton/compare/v1.2.1...v1.2.2) (2024-03-31)
+
+
+### Bug Fixes
+
+* **files:** unintentional single quotes in readme title from untemplating tripple brackets ([8397b9a](https://github.com/gliech/ansible-role-skeleton/commit/8397b9a2acd7733588392205fcf8d93140e8a4e0))
+* **vars:** prefix variables from defaults and vars uniformly ([d49aeef](https://github.com/gliech/ansible-role-skeleton/commit/d49aeefc1f587fbc4ab2cfe6505c796429e0dbc4))
+
+
+### Styles
+
+* yml line length ([8453ecb](https://github.com/gliech/ansible-role-skeleton/commit/8453ecbbdc71aa258b9772427d05679cf98ef1f6))
+
 ## [1.2.1](https://github.com/gliech/ansible-role-skeleton/compare/v1.2.0...v1.2.1) (2024-03-16)
 
 
